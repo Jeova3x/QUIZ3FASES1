@@ -1,1 +1,706 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>English Quiz - 3 Fases Completas</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+<style>
+    @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
+    
+    * {
+        font-family: 'Poppins', sans-serif;
+    }
+    
+    body {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        min-height: 100vh;
+    }
+    
+    .glass {
+        background: rgba(255, 255, 255, 0.95);
+        backdrop-filter: blur(10px);
+        border: 1px solid rgba(255, 255, 255, 0.3);
+    }
+    
+    .option {
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    
+    .option:hover:not(.disabled) {
+        transform: translateX(8px);
+        box-shadow: 0 10px 20px -5px rgba(0, 0, 0, 0.15);
+    }
+    
+    .option.correct {
+        background: linear-gradient(135deg, #10b981, #059669) !important;
+        color: white;
+        border-color: #059669 !important;
+        animation: correctPulse 0.6s ease;
+    }
+    
+    .option.incorrect {
+        background: linear-gradient(135deg, #ef4444, #dc2626) !important;
+        color: white;
+        border-color: #dc2626 !important;
+        animation: shake 0.5s ease;
+    }
+    
+    .option.disabled {
+        cursor: not-allowed;
+        opacity: 0.7;
+    }
+    
+    @keyframes correctPulse {
+        0%, 100% { transform: scale(1); }
+        50% { transform: scale(1.05); }
+    }
+    
+    @keyframes shake {
+        0%, 100% { transform: translateX(0); }
+        25% { transform: translateX(-10px); }
+        75% { transform: translateX(10px); }
+    }
+    
+    .progress-bar {
+        transition: width 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    
+    .fade-in {
+        animation: fadeIn 0.5s ease;
+    }
+    
+    @keyframes fadeIn {
+        from {
+            opacity: 0;
+            transform: translateY(20px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+    
+    .phase-card {
+        transition: all 0.3s ease;
+    }
+    
+    .phase-card:hover {
+        transform: translateY(-8px);
+        box-shadow: 0 20px 40px -10px rgba(0, 0, 0, 0.3);
+    }
+    
+    .phase-locked {
+        opacity: 0.5;
+        cursor: not-allowed;
+    }
+    
+    .phase-locked:hover {
+        transform: none;
+    }
+</style>
+</head>
+<body class="p-4 md:p-8">
+    <div class="max-w-4xl mx-auto">
+        <!-- Header -->
+        <div class="glass rounded-3xl p-6 md:p-8 mb-6 shadow-2xl fade-in">
+            <div class="flex items-center justify-between flex-wrap gap-4">
+                <div>
+                    <h1 class="text-3xl md:text-4xl font-bold bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">
+                        <i class="fas fa-graduation-cap mr-3"></i>English Quiz Master
+                    </h1>
+                    <p class="text-gray-600 mt-2">Teste seu inglês em 3 níveis de dificuldade</p>
+                </div>
+                <div class="text-right">
+                    <div class="text-sm text-gray-500">Pontuação Total</div>
+                    <div class="text-3xl font-bold text-purple-600" id="totalScore">0/30</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Phase Selection Screen -->
+        <div id="phaseScreen" class="fade-in">
+            <div class="grid md:grid-cols-3 gap-6">
+                <!-- Fase 1 -->
+                <div class="phase-card glass rounded-2xl p-6 shadow-xl cursor-pointer" onclick="startPhase(1)">
+                    <div class="text-center">
+                        <div class="w-20 h-20 mx-auto mb-4 rounded-full bg-gradient-to-br from-green-400 to-green-600 flex items-center justify-center">
+                            <i class="fas fa-seedling text-white text-3xl"></i>
+                        </div>
+                        <h3 class="text-2xl font-bold text-gray-800 mb-2">Fase 1</h3>
+                        <p class="text-green-600 font-semibold mb-3">Básico</p>
+                        <p class="text-gray-600 text-sm mb-4">Vocabulário essencial, dias da semana, números e gramática básica</p>
+                        <div class="flex items-center justify-center gap-2 text-sm">
+                            <i class="fas fa-question-circle text-purple-500"></i>
+                            <span class="text-gray-700">10 Questões</span>
+                        </div>
+                        <div class="mt-4 pt-4 border-t border-gray-200">
+                            <div class="text-sm text-gray-500">Melhor resultado</div>
+                            <div class="text-xl font-bold text-green-600" id="score1">-/10</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Fase 2 -->
+                <div class="phase-card glass rounded-2xl p-6 shadow-xl cursor-pointer" onclick="startPhase(2)" id="phase2Card">
+                    <div class="text-center">
+                        <div class="w-20 h-20 mx-auto mb-4 rounded-full bg-gradient-to-br from-blue-400 to-blue-600 flex items-center justify-center">
+                            <i class="fas fa-chart-line text-white text-3xl"></i>
+                        </div>
+                        <h3 class="text-2xl font-bold text-gray-800 mb-2">Fase 2</h3>
+                        <p class="text-blue-600 font-semibold mb-3">Intermediário</p>
+                        <p class="text-gray-600 text-sm mb-4">Tempos verbais, phrasal verbs, preposições e vocabulário avançado</p>
+                        <div class="flex items-center justify-center gap-2 text-sm">
+                            <i class="fas fa-question-circle text-purple-500"></i>
+                            <span class="text-gray-700">10 Questões</span>
+                        </div>
+                        <div class="mt-4 pt-4 border-t border-gray-200">
+                            <div class="text-sm text-gray-500">Melhor resultado</div>eu
+                            <div class="text-xl font-bold text-blue-600" id="score2">-/10</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Fase 3 -->
+                <div class="phase-card glass rounded-2xl p-6 shadow-xl cursor-pointer" onclick="startPhase(3)" id="phase3Card">
+                    <div class="text-center">
+                        <div class="w-20 h-20 mx-auto mb-4 rounded-full bg-gradient-to-br from-purple-400 to-purple-600 flex items-center justify-center">
+                            <i class="fas fa-crown text-white text-3xl"></i>
+                        </div>
+                        <h3 class="text-2xl font-bold text-gray-800 mb-2">Fase 3</h3>
+                        <p class="text-purple-600 font-semibold mb-3">Avançado</p>
+                        <p class="text-gray-600 text-sm mb-4">Idioms, conditional, passive voice e expressões idiomáticas</p>
+                        <div class="flex items-center justify-center gap-2 text-sm">
+                            <i class="fas fa-question-circle text-purple-500"></i>
+                            <span class="text-gray-700">10 Questões</span>
+                        </div>
+                        <div class="mt-4 pt-4 border-t border-gray-200">
+                            <div class="text-sm text-gray-500">Melhor resultado</div>
+                            <div class="text-xl font-bold text-purple-600" id="score3">-/10</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="glass rounded-2xl p-6 mt-6 shadow-xl">
+                <h3 class="font-bold text-lg mb-3 text-gray-800"><i class="fas fa-info-circle text-purple-500 mr-2"></i>Como Funciona</h3>
+                <div class="grid md:grid-cols-3 gap-4 text-sm text-gray-600">
+                    <div class="flex items-start gap-2">
+                        <i class="fas fa-check text-green-500 mt-1"></i>
+                        <span>Feedback imediato após cada resposta</span>
+                    </div>
+                    <div class="flex items-start gap-2">
+                        <i class="fas fa-check text-green-500 mt-1"></i>
+                        <span>Explicação detalhada de cada questão</span>
+                    </div>
+                    <div class="flex items-start gap-2">
+                        <i class="fas fa-check text-green-500 mt-1"></i>
+                        <span>Revisão completa ao final de cada fase</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Quiz Screen -->
+        <div id="quizScreen" class="hidden">
+            <div class="glass rounded-3xl p-6 md:p-8 shadow-2xl">
+                <!-- Progress Bar -->
+                <div class="mb-6">
+                    <div class="flex justify-between items-center mb-2">
+                        <span class="text-sm font-semibold text-gray-700" id="phaseLabel">Fase 1 - Básico</span>
+                        <span class="text-sm font-semibold text-gray-700" id="questionCounter">Questão 1/10</span>
+                    </div>
+                    <div class="w-full bg-gray-200 rounded-full h-3 overflow-hidden">
+                        <div class="progress-bar h-full bg-gradient-to-r from-purple-500 to-pink-500 rounded-full" id="progressBar" style="width: 10%"></div>
+                    </div>
+                </div>
+
+                <!-- Question Card -->
+                <div id="questionCard" class="mb-6 fade-in">
+                    <h2 class="text-xl md:text-2xl font-bold text-gray-800 mb-6" id="questionText"></h2>
+                    <div id="optionsContainer" class="space-y-3"></div>
+                </div>
+
+                <!-- Feedback -->
+                <div id="feedbackContainer" class="hidden mb-6 p-4 rounded-xl fade-in"></div>
+
+                <!-- Navigation -->
+                <div class="flex justify-between items-center gap-4">
+                    <button onclick="backToMenu()" class="px-6 py-3 rounded-xl bg-gray-200 hover:bg-gray-300 text-gray-700 font-semibold transition">
+                        <i class="fas fa-home mr-2"></i>Menu
+                    </button>
+                    <button id="nextBtn" onclick="nextQuestion()" class="hidden px-6 py-3 rounded-xl bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white font-semibold transition shadow-lg">
+                        Próxima <i class="fas fa-arrow-right ml-2"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Results Screen -->
+        <div id="resultsScreen" class="hidden">
+            <div class="glass rounded-3xl p-6 md:p-8 shadow-2xl fade-in">
+                <div class="text-center mb-8">
+                    <div id="resultIcon" class="text-6xl mb-4"></div>
+                    <h2 class="text-3xl font-bold text-gray-800 mb-2" id="resultTitle"></h2>
+                    <p class="text-gray-600" id="resultSubtitle"></p>
+                </div>
+
+                <!-- Score Display -->
+                <div class="bg-gradient-to-br from-purple-50 to-pink-50 rounded-2xl p-8 mb-8">
+                    <div class="text-center">
+                        <div class="text-6xl font-bold bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent mb-2" id="finalScore"></div>
+                        <div class="text-gray-600 text-lg" id="scorePercent"></div>
+                        <div class="mt-4">
+                            <div class="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white shadow" id="resultBadge"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Review Section -->
+                <div class="mb-8">
+                    <h3 class="text-xl font-bold text-gray-800 mb-4"><i class="fas fa-clipboard-check mr-2 text-purple-500"></i>Revisão das Respostas</h3>
+                    <div id="reviewContainer" class="space-y-3 max-h-96 overflow-y-auto pr-2"></div>
+                </div>
+
+                <!-- Actions -->
+                <div class="flex flex-col sm:flex-row gap-3">
+                    <button onclick="restartPhase()" class="flex-1 px-6 py-3 rounded-xl bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white font-semibold transition shadow-lg">
+                        <i class="fas fa-redo mr-2"></i>Refazer Fase
+                    </button>
+                    <button onclick="backToMenu()" class="flex-1 px-6 py-3 rounded-xl bg-gray-200 hover:bg-gray-300 text-gray-700 font-semibold transition">
+                        <i class="fas fa-home mr-2"></i>Voltar ao Menu
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+<script>
+const quizData = {
+    1: {
+        name: "Fase 1 - Básico",
+        color: "green",
+        questions: [
+            {
+                question: "How do you say 'Olá, como vai você?' in English?",
+                options: ["Hello, how are you?", "Goodbye, see you", "Thank you, please", "Excuse me, sorry"],
+                correct: 0,
+                explanation: "'Hello, how are you?' é a tradução correta para 'Olá, como vai você?'"
+            },
+            {
+                question: "What is the plural of 'Book'?",
+                options: ["Bookes", "Book", "Books", "Bookies"],
+                correct: 2,
+                explanation: "O plural de 'book' é formado adicionando 's': books."
+            },
+            {
+                question: "Which day comes after 'Tuesday'?",
+                options: ["Monday", "Wednesday", "Thursday", "Friday"],
+                correct: 1,
+                explanation: "Wednesday (quarta-feira) vem depois de Tuesday (terça-feira)."
+            },
+            {
+                question: "Complete: 'She ___ a teacher.'",
+                options: ["am", "is", "are", "be"],
+                correct: 1,
+                explanation: "Com 'She' usamos 'is' no presente do verbo to be."
+            },
+            {
+                question: "What color is a 'banana'?",
+                options: ["Red", "Blue", "Yellow", "Green"],
+                correct: 2,
+                explanation: "Banana é yellow (amarela) quando madura."
+            },
+            {
+                question: "How do you say '20' in English?",
+                options: ["Twelve", "Twenty", "Thirty", "Two"],
+                correct: 1,
+                explanation: "20 em inglês é 'twenty'."
+            },
+            {
+                question: "What is the opposite of 'Hot'?",
+                options: ["Warm", "Cool", "Cold", "Heat"],
+                correct: 2,
+                explanation: "O oposto de 'hot' (quente) é 'cold' (frio)."
+            },
+            {
+                question: "Complete: 'I ___ from Brazil.'",
+                options: ["Is", "Are", "Am", "Be"],
+                correct: 2,
+                explanation: "Com 'I' usamos 'am' no presente do verbo to be."
+            },
+            {
+                question: "Which animal 'barks'?",
+                options: ["Cat", "Dog", "Bird", "Fish"],
+                correct: 1,
+                explanation: "Dog (cachorro) é o animal que 'barks' (late)."
+            },
+            {
+                question: "What is 'Water' in Portuguese?",
+                options: ["Fogo", "Terra", "Água", "Ar"],
+                correct: 2,
+                explanation: "'Water' significa 'água' em português."
+            }
+        ]
+    },
+    2: {
+        name: "Fase 2 - Intermediário",
+        color: "blue",
+        questions: [
+            {
+                question: "Choose the correct sentence in Past Simple:",
+                options: ["She go to school yesterday", "She goes to school yesterday", "She went to school yesterday", "She going to school yesterday"],
+                correct: 2,
+                explanation: "'Went' é o passado simples de 'go'. Com 'yesterday' usamos Past Simple."
+            },
+            {
+                question: "What does 'Actually' mean?",
+                options: ["Atualmente", "Na verdade", "De fato", "Agora"],
+                correct: 1,
+                explanation: "'Actually' significa 'na verdade' ou 'de fato'. Cuidado: não é 'atualmente'!"
+            },
+            {
+                question: "Complete: 'If I ___ rich, I would travel the world.'",
+                options: ["am", "was", "were", "be"],
+                correct: 2,
+                explanation: "No Second Conditional usamos 'were' para todas as pessoas com 'If I...'"
+            },
+            {
+                question: "Which sentence is in Present Perfect?",
+                options: ["I eat pizza", "I ate pizza", "I have eaten pizza", "I am eating pizza"],
+                correct: 2,
+                explanation: "'Have eaten' é Present Perfect: have/has + past participle."
+            },
+            {
+                question: "What is a synonym for 'Big'?",
+                options: ["Small", "Tiny", "Large", "Little"],
+                correct: 2,
+                explanation: "'Large' é sinônimo de 'big' - ambos significam grande."
+            },
+{
+                question: "Complete: 'She has been working here ___ 2020.'",
+                options: ["for", "since", "at", "in"],
+                correct: 1,
+                explanation: "Usamos 'since' com datas específicas ou pontos no tempo: since 2020."
+            },
+            {
+                question: "What does the phrasal verb 'Give up' mean?",
+                options: ["Dar para cima", "Desistir", "Levantar", "Entregar"],
+                correct: 1,
+                explanation: "'Give up' significa 'desistir' ou 'abandonar'."
+            },
+            {
+                question: "Choose the correct comparative: 'This book is ___ than that one.'",
+                options: ["more interesting", "interestinger", "most interesting", "interest"],
+                correct: 0,
+                explanation: "Adjetivos longos usam 'more' para o comparativo: more interesting."
+            },
+            {
+                question: "Complete: 'I wish I ___ speak French.'",
+                options: ["can", "could", "will", "would"],
+                correct: 1,
+                explanation: "Com 'I wish' para situações presentes irreais usamos 'could'."
+            },
+            {
+                question: "Which word is a preposition?",
+                options: ["Quickly", "Beautiful", "Under", "Happiness"],
+                correct: 2,
+                explanation: "'Under' (debaixo) é uma preposição de lugar."
+            }
+        ]
+    },
+    3: {
+        name: "Fase 3 - Avançado",
+        color: "purple",
+        questions: [
+            {
+                question: "What does the idiom 'Break a leg' mean?",
+                options: ["Quebrar a perna", "Boa sorte", "Cair", "Correr"],
+                correct: 1,
+                explanation: "'Break a leg' é uma expressão idiomática que significa 'boa sorte', usada principalmente antes de apresentações."
+            },
+            {
+                question: "Choose the correct sentence in Third Conditional:",
+                options: ["If I had studied, I would pass", "If I had studied, I would have passed", "If I studied, I would have passed", "If I have studied, I would pass"],
+                correct: 1,
+                explanation: "Third Conditional: If + had + past participle, would have + past participle."
+            },
+            {
+                question: "What does 'To hit the nail on the head' mean?",
+                options: ["Bater na cabeça", "Acertar em cheio", "Construir algo", "Machucar alguém"],
+                correct: 1,
+                explanation: "Esta expressão significa 'acertar em cheio' ou 'dizer exatamente o que era preciso'."
+            },
+            {
+                question: "Complete: 'By the time she arrived, we ___ already left.'",
+                options: ["have", "had", "has", "having"],
+                correct: 1,
+                explanation: "Usamos 'had' (Past Perfect) para ação que aconteceu antes de outra no passado."
+            },
+            {
+                question: "Which sentence uses Passive Voice correctly?",
+                options: ["The book was wrote by him", "The book was written by him", "The book is wrote by him", "The book has wrote by him"],
+                correct: 1,
+                explanation: "Passive Voice: was/were + past participle. 'Written' é o particípio de 'write'."
+            },
+            {
+                question: "What is the meaning of 'Ubiquitous'?",
+                options: ["Raro", "Presente em todo lugar", "Antigo", "Pequeno"],
+                correct: 1,
+                explanation: "'Ubiquitous' significa onipresente, que está ou existe em todos os lugares ao mesmo tempo."
+            },
+            {
+                question: "Complete: 'I would rather you ___ smoke here.'",
+                options: ["don't", "didn't", "won't", "not"],
+                correct: 1,
+                explanation: "Com 'would rather' para preferências sobre ações de outros usamos Past Simple: didn't."
+            },
+            {
+                question: "What does 'It's raining cats and dogs' mean?",
+                options: ["Animais caindo do céu", "Chovendo muito forte", "Tempo bom", "Animais na rua"],
+                correct: 1,
+                explanation: "Esta expressão idiomática significa que está chovendo muito forte, chovendo canivetes."
+            },
+            {
+                question: "Choose the correct use of 'Despite':",
+                options: ["Despite of the rain, we went out", "Despite the rain, we went out", "Despite of raining, we went out", "Despite rain, we went out"],
+                correct: 1,
+                explanation: "'Despite' não usa 'of'. A forma correta é 'Despite + noun': Despite the rain."
+            },
+            {
+                question: "What is a 'Conundrum'?",
+                options: ["Uma fruta", "Um problema difícil", "Um tipo de dança", "Um animal"],
+                correct: 1,
+                explanation: "'Conundrum' significa um problema difícil, enigma ou questão complexa."
+            }
+        ]
+    }
+};
+
+// State
+let currentPhase = 0;
+let currentQuestion = 0;
+let score = 0;
+let userAnswers = [];
+let phaseScores = { 1: -1, 2: -1, 3: -1 };
+
+// Initialize
+function init() {
+    loadScores();
+    updateTotalScore();
+}
+
+function loadScores() {
+    const saved = localStorage.getItem('englishQuizScores');
+    if (saved) {
+        phaseScores = JSON.parse(saved);
+        document.getElementById('score1').textContent = phaseScores[1] >= 0 ? phaseScores[1] + '/10' : '-/10';
+        document.getElementById('score2').textContent = phaseScores[2] >= 0 ? phaseScores[2] + '/10' : '-/10';
+        document.getElementById('score3').textContent = phaseScores[3] >= 0 ? phaseScores[3] + '/10' : '-/10';
+    }
+}
+
+function saveScores() {
+    localStorage.setItem('englishQuizScores', JSON.stringify(phaseScores));
+}
+
+function updateTotalScore() {
+    const total = Object.values(phaseScores).filter(s => s >= 0).reduce((a, b) => a + b, 0);
+    document.getElementById('totalScore').textContent = total + '/30';
+}
+
+function startPhase(phase) {
+    currentPhase = phase;
+    currentQuestion = 0;
+    score = 0;
+    userAnswers = [];
+    
+    document.getElementById('phaseScreen').classList.add('hidden');
+    document.getElementById('quizScreen').classList.remove('hidden');
+    document.getElementById('resultsScreen').classList.add('hidden');
+    
+    document.getElementById('phaseLabel').textContent = quizData[phase].name;
+    loadQuestion();
+}
+
+function loadQuestion() {
+    const q = quizData[currentPhase].questions[currentQuestion];
+    
+    document.getElementById('questionCounter').textContent = `Questão ${currentQuestion + 1}/10`;
+    document.getElementById('progressBar').style.width = `${((currentQuestion + 1) / 10) * 100}%`;
+    document.getElementById('questionText').textContent = q.question;
+    document.getElementById('feedbackContainer').classList.add('hidden');
+    document.getElementById('nextBtn').classList.add('hidden');
+    
+    const optionsContainer = document.getElementById('optionsContainer');
+    optionsContainer.innerHTML = '';
+    
+    q.options.forEach((option, index) => {
+        const btn = document.createElement('button');
+        btn.className = 'option w-full text-left p-4 rounded-xl border-2 border-gray-200 bg-white hover:border-purple-400 hover:bg-purple-50 font-medium text-gray-700';
+        btn.innerHTML = `
+            <div class="flex items-center gap-3">
+                <div class="w-8 h-8 rounded-full bg-purple-100 text-purple-600 flex items-center justify-center font-bold text-sm">
+                    ${String.fromCharCode(65 + index)}
+                </div>
+                <span>${option}</span>
+            </div>
+        `;
+        btn.onclick = () => selectAnswer(index);
+        optionsContainer.appendChild(btn);
+    });
+    
+    document.getElementById('questionCard').classList.remove('fade-in');
+    void document.getElementById('questionCard').offsetWidth;
+    document.getElementById('questionCard').classList.add('fade-in');
+}
+
+function selectAnswer(selected) {
+    const q = quizData[currentPhase].questions[currentQuestion];
+    const options = document.querySelectorAll('.option');
+    const isCorrect = selected === q.correct;
+    
+    if (isCorrect) score++;
+    userAnswers.push({ selected, correct: q.correct, isCorrect });
+    
+    options.forEach((btn, index) => {
+        btn.classList.add('disabled');
+        btn.onclick = null;
+        if (index === q.correct) {
+            btn.classList.add('correct');
+        } else if (index === selected && !isCorrect) {
+            btn.classList.add('incorrect');
+        }
+    });
+    
+    const feedback = document.getElementById('feedbackContainer');
+    feedback.classList.remove('hidden');
+    
+    if (isCorrect) {
+        feedback.className = 'mb-6 p-4 rounded-xl bg-green-50 border-2 border-green-200 fade-in';
+        feedback.innerHTML = `
+            <div class="flex items-start gap-3">
+                <div class="w-8 h-8 rounded-full bg-green-500 flex items-center justify-center flex-shrink-0">
+                    <i class="fas fa-check text-white"></i>
+                </div>
+                <div>
+                    <div class="font-bold text-green-800 mb-1">Correto!</div>
+                    <div class="text-green-700 text-sm">${q.explanation}</div>
+                </div>
+            </div>
+        `;
+    } else {
+        feedback.className = 'mb-6 p-4 rounded-xl bg-red-50 border-2 border-red-200 fade-in';
+        feedback.innerHTML = `
+            <div class="flex items-start gap-3">
+                <div class="w-8 h-8 rounded-full bg-red-500 flex items-center justify-center flex-shrink-0">
+                    <i class="fas fa-times text-white"></i>
+                </div>
+                <div>
+                    <div class="font-bold text-red-800 mb-1">Incorreto</div>
+                    <div class="text-red-700 text-sm mb-2">Resposta correta: <strong>${q.options[q.correct]}</strong></div>
+                    <div class="text-red-600 text-sm">${q.explanation}</div>
+                </div>
+            </div>
+        `;
+    }
+    
+    document.getElementById('nextBtn').classList.remove('hidden');
+}
+
+function nextQuestion() {
+    if (currentQuestion < 9) {
+        currentQuestion++;
+        loadQuestion();
+    } else {
+        showResults();
+    }
+}
+
+function showResults() {
+    document.getElementById('quizScreen').classList.add('hidden');
+    document.getElementById('resultsScreen').classList.remove('hidden');
+    
+    phaseScores[currentPhase] = score;
+    saveScores();
+    loadScores();
+    updateTotalScore();
+    
+    const percent = (score / 10) * 100;
+    document.getElementById('finalScore').textContent = `${score}/10`;
+    document.getElementById('scorePercent').textContent = `${percent}% de acerto`;
+    
+    let icon, title, subtitle, badge;
+    if (score >= 9) {
+        icon = '🏆';
+        title = 'Excelente!';
+        subtitle = 'Domínio completo do conteúdo!';
+        badge = '<i class="fas fa-star text-yellow-500"></i><span class="font-semibold text-gray-700">Mestre</span>';
+    } else if (score >= 7) {
+        icon = '🎉';
+        title = 'Muito Bom!';
+        subtitle = 'Você está no caminho certo!';
+        badge = '<i class="fas fa-thumbs-up text-blue-500"></i><span class="font-semibold text-gray-700">Avançado</span>';
+    } else if (score >= 5) {
+        icon = '👍';
+        title = 'Bom Trabalho!';
+        subtitle = 'Continue praticando para melhorar!';
+        badge = '<i class="fas fa-check-circle text-green-500"></i><span class="font-semibold text-gray-700">Intermediário</span>';
+    } else {
+        icon = '📚';
+        title = 'Continue Estudando!';
+        subtitle = 'Revise o conteúdo e tente novamente!';
+        badge = '<i class="fas fa-book text-purple-500"></i><span class="font-semibold text-gray-700">Iniciante</span>';
+    }
+    
+    document.getElementById('resultIcon').textContent = icon;
+    document.getElementById('resultTitle').textContent = title;
+    document.getElementById('resultSubtitle').textContent = subtitle;
+    document.getElementById('resultBadge').innerHTML = badge;
+    
+    // Review
+    const reviewContainer = document.getElementById('reviewContainer');
+    reviewContainer.innerHTML = '';
+    
+    quizData[currentPhase].questions.forEach((q, index) => {
+        const answer = userAnswers[index];
+        const div = document.createElement('div');
+        div.className = `p-4 rounded-xl border-2 ${answer.isCorrect ? 'bg-green-50 border-green-200' : 'bg-red-50 border-red-200'}`;
+        div.innerHTML = `
+            <div class="flex items-start gap-3">
+                <div class="w-8 h-8 rounded-full ${answer.isCorrect ? 'bg-green-500' : 'bg-red-500'} flex items-center justify-center flex-shrink-0 text-white font-bold text-sm">
+                    ${index + 1}
+                </div>
+                <div class="flex-1">
+                    <div class="font-semibold text-gray-800 mb-2">${q.question}</div>
+                    <div class="text-sm space-y-1">
+                        <div class="text-gray-600">
+                            Sua resposta: <span class="${answer.isCorrect ? 'text-green-700 font-semibold' : 'text-red-700 font-semibold'}">${q.options[answer.selected]}</span>
+                            ${answer.isCorrect ? '<i class="fas fa-check-circle text-green-500 ml-1"></i>' : '<i class="fas fa-times-circle text-red-500 ml-1"></i>'}
+                        </div>
+                        ${!answer.isCorrect ? `<div class="text-gray-600">Resposta correta: <span class="text-green-700 font-semibold">${q.options[answer.correct]}</span></div>` : ''}
+                        <div class="text-gray-500 text-xs mt-2">${q.explanation}</div>
+                    </div>
+                </div>
+            </div>
+        `;
+        reviewContainer.appendChild(div);
+    });
+}
+
+function restartPhase() {
+    startPhase(currentPhase);
+}
+
+function backToMenu() {
+    document.getElementById('phaseScreen').classList.remove('hidden');
+    document.getElementById('quizScreen').classList.add('hidden');
+    document.getElementById('resultsScreen').classList.add('hidden');
+}
+
+init();
+</script>
+</body>
+</html>
 
